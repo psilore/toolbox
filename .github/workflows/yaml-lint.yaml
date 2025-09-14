@@ -1,0 +1,31 @@
+---
+name: YAML lint
+
+on:
+  workflow_call:
+    inputs:
+      default-config:
+        type: boolean
+        required: false
+        description: "Use a default configuration for lint in yaml files"
+
+env:
+  DEFAULT_CONFIG: ${{ inputs.default-config || 'true' }}
+  DEFAULT_YAML_CONFIG: .github/workflows/config/.yamllint.yaml
+
+jobs:
+  validate-yaml:
+    name: Validate YAML
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: YAML Lint
+        run: |
+          if docker run --rm -v "$PWD":/data cytopia/yamllint -c $DEFAULT_YAML_CONFIG \
+            $(find . -type f \( -name "*.yml" -o -name "*.yaml" \)); then
+            echo "✅ YAML Lint: OK"
+          else
+            echo "❌ YAML Lint: Failed"
+            exit 1
+          fi
