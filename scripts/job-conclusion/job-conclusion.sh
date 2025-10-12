@@ -60,12 +60,11 @@ check_step_summary() {
 }
 
 setup() {
+  setup_colors
   touch step_summary.md
   SUMMARY_FILE=step_summary.md
 
   format_log "Created and using summary file: $SUMMARY_FILE"
-
-  setup_colors
 
   command_exists gh || {
     format_error "gh CLI is not installed!"
