@@ -19,7 +19,6 @@ jobs:
           fetch-depth: 0
       - name: Conclusion
         run: scripts/conclusion/conclusion.sh
-        # GitHub context variables see https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#available-contexts
         env:
           DEPLOYMENT_ENVIRONMENT: 'prod'
           WORKFLOW_NAME: 'deploy.yml'
