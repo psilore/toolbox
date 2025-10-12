@@ -26,7 +26,7 @@ jobs:
       - name: Commmit lint
         uses: wagoid/commitlint-github-action@b948419dd99f3fd78a6548d48f94e3df7f6bf3ed
         with:
-          configFile: config/commitlint.config.cjs
+          configFile: ${{ github.workspace }}/config/commitlint.config.cjs
           failOnErrors: true
           failOnWarnings: false
   validate-yaml:
@@ -42,7 +42,7 @@ jobs:
           sudo apt-get install -y yamllint
       - name: yamllint
         run: |
-          CONFIG="config/yamllint-config.yml"
+          CONFIG="${{ github.workspace }}/config/yamllint-config.yml"
           # Check if config file exists
           if [ -f "$CONFIG" ]; then
             echo "Using yamllint config file: $CONFIG"
