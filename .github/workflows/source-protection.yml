@@ -1,0 +1,47 @@
+---
+name: Source protection
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
+jobs:
+  validate-commits:
+    name: Validate Commits
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - name: Commmit lint
+        uses: wagoid/commitlint-github-action@b948419dd99f3fd78a6548d48f94e3df7f6bf3ed
+        with:
+          configFile: config/commitlint.config.cjs
+          failOnErrors: true
+          failOnWarnings: false
+  validate-yaml:
+    name: Validate YAML
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - name: Install yamllint
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y yamllint=1.37.1-1
+      - name: yamllint
+        run: |
+          CONFIG="config/yamllint-config.yml"
+          # Check if config file exists
+          if [ -f "$CONFIG" ]; then
+            echo "Using yamllint config file: $CONFIG"
+            if yamllint -c "$CONFIG" .; then
+              echo "Lint free! 🎉"
+            fi
+          else
+            echo "Config file '$CONFIG' not found, running yamllint with default configuration"
+            if yamllint .; then
+              echo "Lint free! 🎉"
+            fi
+          fi

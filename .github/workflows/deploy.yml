@@ -1,0 +1,45 @@
+---
+name: Deploy
+on:
+  workflow_dispatch: {}
+
+permissions:
+  actions: read  # enables reading of the actions in the repo
+  deployments: read  # enables reading of the deployments in the repo
+  security-events: write  # enables the action to create security events
+  pull-requests: write  # enables the action to label pull requests
+  contents: write  # enables committing back to repo
+  id-token: write  # enables the action to get a token for OIDC auth
+  checks: write  # enables the action to create check runs
+  issues: write  # enables the action to create comments issues
+  statuses: write  # enables the action to list commit statuses
+env:
+  GH_TOKEN: ${{ secrets.GIT_USER_PAT }}
+  GIT_USER: ${{ secrets.GIT_USER }}
+  GIT_EMAIL: ${{ secrets.GIT_EMAIL }}
+jobs:
+  source-protection:
+    name: Source protection
+    uses: ./.github/workflows/source-protection.yml
+  shellcheck:
+    name: ShellCheck
+    uses: ./.github/workflows/shellcheck.yml
+    with:
+      severity: 'error'
+      shell-type: 'bash'
+  prod-build:
+    name: Production build
+    runs-on: ubuntu-24.04
+    environment:
+      name: prod
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        with:
+          fetch-depth: 0
+      - name: Setup GitHub CLI
+        run: gh auth setup-git
+      - name: Configure git
+        run: |
+          git config --global user.name "$GIT_USER"
+          git config --global user.email "$GIT_EMAIL"

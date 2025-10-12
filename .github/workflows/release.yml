@@ -1,0 +1,37 @@
+---
+name: Release
+
+run-name: '🚀 Creating release for ${{ github.ref }}'
+
+on:
+  workflow_run:
+    workflows: ['Deploy']
+    types:
+      - completed
+
+jobs:
+  conclusion:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        with:
+          fetch-depth: 0
+      - name: Conclusion
+        run: scripts/conclusion/conclusion.sh
+        # GitHub context variables see https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#available-contexts
+        env:
+          DEPLOYMENT_ENVIRONMENT: 'prod'
+          WORKFLOW_NAME: 'deploy.yml'
+          GITHUB_EVENT_WORKFLOW_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          GITHUB_EVENT_REPOSITORY_NAME: ${{ github.event.repository.name }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_WORKFLOW_RUN_HTML_URL: ${{ github.event.workflow_run.html_url }}
+          GITHUB_EVENT_WORKFLOW_RUN_RUN_NUMBER: ${{ github.event.workflow_run.run_number }}
+          GITHUB_STEP_SUMMARY: $GITHUB_STEP_SUMMARY
+
+  release:
+    name: Release
+    needs: conclusion
+    uses: ./.github/workflows/semantic-release.yml
+    secrets: inherit

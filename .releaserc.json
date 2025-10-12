@@ -1,0 +1,3 @@
+{
+  "extends": "./settings/semantic-release/generic/.releaserc.json"
+}

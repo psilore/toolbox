@@ -1,0 +1,40 @@
+---
+name: ShellCheck
+
+on:
+  workflow_call:
+    inputs:
+      severity:
+        description: 'The severity level for ShellCheck (e.g., info, warning, error)'
+        type: string
+        required: false
+        default: 'info'
+      shell-type:
+        description: 'The shell type for ShellCheck (e.g., bash, sh, zsh)'
+        type: string
+        required: false
+        default: 'bash'
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - name: Install ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck=0.10.0-1
+      - name: ShellCheck
+        run: |
+          if find . -type f -name "*.sh" -exec shellcheck \
+              --shell=${{ inputs.shell-type }} \
+              --severity=${{ inputs.severity }} \
+              --norc {} +; then
+            echo "Lint free! 🎉"
+          fi

@@ -1,9 +1,0 @@
----
-extends: default
-
-rules:
-  truthy:
-    check-keys: false
-  line-length: disable
-  comments:
-    min-spaces-from-content: 1

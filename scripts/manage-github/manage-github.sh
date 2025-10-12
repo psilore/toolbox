@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Script to fetch GitHub repository names or team members using the gh CLI.
+
 command_exists() {
   command -v "$@" >/dev/null 2>&1
 }
@@ -57,16 +59,13 @@ fetch_repo_names() {
   local active_repos
   local repo_names
 
-  active_repos=$(gh api "$url" --paginate 2>&1)
-  if [ $? -ne 0 ]; then
+  if ! active_repos=$(gh api "$url" --paginate 2>&1); then
     format_error "Failed to fetch data from GitHub API:"
     echo "$active_repos"
     exit 1
   fi
 
-  repo_names=$(echo "$active_repos" | jq -r '.[].name' 2>&1)
-
-  if [ $? -ne 0 ]; then
+  if ! repo_names=$(echo "$active_repos" | jq -r '.[].name' 2>&1); then
     format_error "Failed to parse JSON with jq:"
     format_log "$repo_names"
     exit 1
@@ -87,8 +86,7 @@ get_team_members() {
   else
     url="/orgs/$OWNER/teams/$TEAM_SLUG/members"
   fi
-  members=$(gh api "$url" --paginate 2>&1)
-  if [ $? -ne 0 ]; then
+  if ! members=$(gh api "$url" --paginate 2>&1); then
     format_error "Failed to fetch members from GitHub API:"
     echo "$members"
     exit 1
@@ -106,10 +104,10 @@ usage() {
   printf '%s\n' "  -r, --repos OWNER [Required],TEAM_SLUG     Get repositories for the owner or team (comma or space separated)"
   printf '\n'
   printf '%s\n' "Examples:"
-  printf '%s\n' "  bash $(dirname \"$0\")/$(basename \"$0\") -r acme              List repos for user/organization acme"
-  printf '%s\n' "  bash $(dirname \"$0\")/$(basename \"$0\") -r acme,dreamteam    List repos in organization acme for team dreamteam"
-  printf '%s\n' "  bash $(dirname \"$0\")/$(basename \"$0\") -m acme              List members of organization acme"
-  printf '%s\n' "  bash $(dirname \"$0\")/$(basename \"$0\") -m acme,dreamteam    List members in organization acme for team dreamteam"
+  printf '%s\n' "  bash $(dirname "$0")/$(basename "$0") -r acme              List repos for user/organization acme"
+  printf '%s\n' "  bash $(dirname "$0")/$(basename "$0") -r acme,dreamteam    List repos in organization acme for team dreamteam"
+  printf '%s\n' "  bash $(dirname "$0")/$(basename "$0") -m acme              List members of organization acme"
+  printf '%s\n' "  bash $(dirname "$0")/$(basename "$0") -m acme,dreamteam    List members in organization acme for team dreamteam"
   printf '\n'
 }
 
@@ -121,13 +119,21 @@ setup() {
     format_error "git is not installed!"
     exit 1
   }
+  command_exists gh || {
+    format_error "gh cli is not installed!"
+    exit 1
+  }
+  command_exists jq || {
+    format_error "jq is not installed!"
+    exit 1
+  }
 
 }
 
 main() {
+
   setup
-  OPTIONS=$(getopt -o hr:m: --long help,repos:,members: -- "$@")
-  if [ $? -ne 0 ]; then
+  if ! OPTIONS=$(getopt -o hr:m: --long help,repos:,members: -- "$@"); then
     usage
     exit 1
   fi
@@ -180,6 +186,12 @@ main() {
         ;;
     esac
   done
+
+  # If no valid option was passed, print usage and exit 1
+  if [ "$MEMBERS_FLAG" = false ] && [ "$REPOS_FLAG" = false ]; then
+    usage
+    exit 1
+  fi
 
   if [ "$MEMBERS_FLAG" = true ]; then
     get_team_members
