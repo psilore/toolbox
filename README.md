@@ -4,6 +4,7 @@
 
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 [![semantic-release: node](https://img.shields.io/badge/semantic--release-node-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
+[![Release](https://github.com/psilore/toolbox/actions/workflows/release.yml/badge.svg)](https://github.com/psilore/toolbox/actions/workflows/release.yml)
 
 A collection of utility scripts for managing GitHub repositories and workflows. This toolbox provides automation for common GitHub operations including secret management, environment setup, workflow monitoring, and repository administration through the GitHub CLI.
 
