@@ -39,8 +39,7 @@ jobs:
       - name: Install yamllint
         run: |
           sudo apt-get update
-          apt-cache policy yamllint
-          sudo apt-get install -y yamllint==1.35.1-2
+          sudo apt-get install -y yamllint==1.33.0-1
       - name: yamllint
         run: |
           CONFIG="config/yamllint-config.yml"
