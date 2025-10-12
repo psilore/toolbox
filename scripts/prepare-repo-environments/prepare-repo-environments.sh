@@ -59,14 +59,15 @@ setup_colors(){
 usage() {
   cat >&2 <<EOF
 
-Usage: $0 [--list] [--remove] <environment-name>... [--repo <owner/repo>]
+Usage: $0 [--list] [--remove] [--version] <environment-name>... [--repo <owner/repo>]
 
 Create or remove GitHub Environments in a repository using the gh CLI.
 
 Options:
   --list               List existing environments in the repository.
   --remove             Remove the specified environments instead of creating them.
-                       <environment-name> One or more environment names to create or remove.
+  --version            Show script version
+  <environment-name>   One or more environment names to create or remove.
   --repo <owner/repo>  Target repository in owner/repo format (optional, defaults to current repo).
 
 Examples:
@@ -81,8 +82,14 @@ Examples:
 
   $0 test
     # Creates 'test' environment in the current repository
+  $0 --version
+    # Show script version
 EOF
   exit 1
+}
+
+print_version() {
+  echo "$SCRIPT_VERSION"
 }
 
 # List environments in a repository
@@ -143,6 +150,12 @@ remove_environment() {
 
 setup() {
   setup_colors
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  VERSION_FILE="${SCRIPT_DIR}/../../VERSION"
+  SCRIPT_VERSION="unknown"
+  if [[ -f "$VERSION_FILE" ]]; then
+    SCRIPT_VERSION="$(< "$VERSION_FILE" tr -d '\n')"
+  fi
   command_exists gh || {
     format_error "gh cli is not installed!"
     exit 1
@@ -153,15 +166,11 @@ setup() {
   }
 }
 main() {
-
   setup
 
   if [[ $# -lt 1 ]]; then
     usage
   fi
-
-  format_log "Starting prepare-repo-environments script"
-
   local env_names arg remove_mode repo_path list_mode
   env_names=()
   remove_mode=0
@@ -174,6 +183,10 @@ main() {
     case "${arg}" in
       -h|--help|help)
         usage
+        ;;
+      --version)
+        print_version
+        exit 0
         ;;
       --list)
         list_mode=1

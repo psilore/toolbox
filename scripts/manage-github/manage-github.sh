@@ -94,8 +94,13 @@ get_team_members() {
   echo "$members" | jq -r '.[].login'
 }
 
+print_version() {
+  echo "$SCRIPT_VERSION"
+}
+
 usage() {
   printf '%s\n' "${FMT_BOLD}Usage:${FMT_RESET} bash $(dirname "$0")/$(basename "$0") [OPTIONS]"
+  printf '%s\n' "  --version                 Show script version"
   printf '\n'
   printf '%s\n' "${FMT_BOLD}Options:${FMT_RESET}"
   printf '\n'
@@ -114,7 +119,12 @@ usage() {
 
 setup() {
   setup_colors
-
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  VERSION_FILE="${SCRIPT_DIR}/../../VERSION"
+  SCRIPT_VERSION="unknown"
+  if [[ -f "$VERSION_FILE" ]]; then
+    SCRIPT_VERSION="$(< "$VERSION_FILE" tr -d '\n')"
+  fi
   command_exists git || {
     format_error "git is not installed!"
     exit 1
@@ -133,6 +143,10 @@ setup() {
 main() {
 
   setup
+  if [[ "$1" == "--version" ]]; then
+    print_version
+    exit 0
+  fi
   if ! OPTIONS=$(getopt -o hr:m: --long help,repos:,members: -- "$@"); then
     usage
     exit 1
