@@ -9,6 +9,15 @@ on:
     types:
       - completed
 
+permissions:
+  actions: 'read'
+  security-events: 'write'
+  contents: 'write'
+  id-token: 'write'
+  checks: 'write'
+  issues: 'write'
+  pull-requests: 'write'
+
 jobs:
   conclusion:
     runs-on: ubuntu-24.04
