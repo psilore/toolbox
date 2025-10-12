@@ -1,6 +1,7 @@
-name: On Push main branch
+---
+name: 🪄 On Push main branch
 
-run-name: '🪄 Pushing changes to ${{ github.ref }}'
+run-name: 'Pushing changes to ${{ github.ref }}'
 
 on:
   push:
