@@ -31,7 +31,7 @@ Usage
 **Example**  
 
 ```bash
-bash prepare-repo-environments/prepare-repo-environments.sh --help
+bash sripts/prepare-repo-environments/prepare-repo-environments.sh --help
 ```
 
 ```shell
