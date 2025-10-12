@@ -46,15 +46,6 @@ chmod +x action-repo-secrets.sh
 gh auth login
 ```
 
-1. (Optional) Install 1Password CLI for secret reference support:
-
-```bash
-# macOS
-brew install 1password-cli
-
-# Other platforms: https://developer.1password.com/docs/cli/get-started/
-```
-
 ## Usage
 
 ```bash
