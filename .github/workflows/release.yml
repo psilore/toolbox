@@ -28,7 +28,16 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Conclusion
-        run: scripts/conclusion/conclusion.sh
+        run: |
+          scripts/job-conclusion/job-conclusion.sh
+          if [[ -f step_summary.md ]]; then
+            SUMMARY=$(cat step_summary.md)
+            echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          else
+            echo "No step summary file found, exiting!"
+            exit 1
+          fi
         env:
           DEPLOYMENT_ENVIRONMENT: 'prod'
           WORKFLOW_NAME: 'deploy.yml'
@@ -37,7 +46,6 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_EVENT_WORKFLOW_RUN_HTML_URL: ${{ github.event.workflow_run.html_url }}
           GITHUB_EVENT_WORKFLOW_RUN_RUN_NUMBER: ${{ github.event.workflow_run.run_number }}
-          GITHUB_STEP_SUMMARY: $GITHUB_STEP_SUMMARY
 
   release:
     name: Release
