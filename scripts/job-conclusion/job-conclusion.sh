@@ -65,16 +65,6 @@ setup() {
   SUMMARY_FILE=step_summary.md
 
   format_log "Created and using summary file: $SUMMARY_FILE"
-
-  command_exists gh || {
-    format_error "gh CLI is not installed!"
-    exit 1
-  }
-
-  if ! gh auth status >/dev/null 2>&1; then
-    format_error "gh CLI is not authenticated. Please authenticate and try again."
-    exit 1
-  fi
 }
 
 main() {
