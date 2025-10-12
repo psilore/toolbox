@@ -4,10 +4,6 @@
 
 set -euo pipefail
 
-command_exists() {
-  command -v "$@" >/dev/null 2>&1
-}
-
 _format_msg() {
   # $1=color, $2=level, $3=message
   local color="$1"
@@ -76,7 +72,6 @@ main() {
   local environment="${DEPLOYMENT_ENVIRONMENT:-prod}"
   local workflow_name="${WORKFLOW_NAME:-${GITHUB_EVENT_WORKFLOW_RUN_NAME:-deploy.yml}}"
   
-  
   if [[ "$conclusion" == "success" ]]; then
     format_success "Workflow succeeded"
     exit 0
@@ -93,7 +88,6 @@ EOF
     format_error "Workflow failed"
     exit 1
   fi
-  
 }
 
 main "$@"

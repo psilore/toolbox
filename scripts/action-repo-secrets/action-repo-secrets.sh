@@ -98,7 +98,11 @@ setup_colors() {
 #######################################
 usage() {
   cat << EOF
+
 Usage: ${SCRIPT_NAME} <command> [options]
+
+Options:
+  --version, version   Show script version
 
 Commands:
   add <repo> <secret-name> <secret-value>  Add or update a secret
@@ -117,6 +121,7 @@ Examples:
   echo "secret_value" | ${SCRIPT_NAME} add owner/repo MY_SECRET -
   ${SCRIPT_NAME} remove owner/repo MY_SECRET
   ${SCRIPT_NAME} list owner/repo
+  ${SCRIPT_NAME} --version
 
 1Password Integration:
   If the secret value starts with "op://", it will be treated as a 1Password
@@ -124,6 +129,10 @@ Examples:
   Requires 1Password CLI (op) to be installed and authenticated.
 
 EOF
+}
+
+print_version() {
+  echo "${SCRIPT_VERSION}"
 }
 
 #######################################
@@ -299,6 +308,17 @@ list_secrets() {
   fi
 }
 
+setup() {
+  setup_colors
+  check_gh_cli
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  VERSION_FILE="${SCRIPT_DIR}/../../VERSION"
+  SCRIPT_VERSION="unknown"
+  if [[ -f "$VERSION_FILE" ]]; then
+    SCRIPT_VERSION="$(< "$VERSION_FILE" tr -d '\n')"
+  fi
+}
+
 #######################################
 # Main function.
 # Arguments:
@@ -307,8 +327,7 @@ list_secrets() {
 #   Depends on command
 #######################################
 main() {
-  setup_colors
-  check_gh_cli
+  setup
   
   if [[ $# -lt 1 ]]; then
     usage
@@ -319,6 +338,10 @@ main() {
   shift
   
   case "${command}" in
+    --version|version)
+      print_version
+      exit 0
+      ;;
     add)
       if [[ $# -ne 3 ]]; then
         format_error "add requires 3 arguments"
