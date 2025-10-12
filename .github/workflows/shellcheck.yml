@@ -36,8 +36,7 @@ jobs:
       - name: Install ShellCheck
         run: |
           sudo apt-get update
-          apt-cache policy shellcheck
-          sudo apt-get install -y shellcheck=0.10.0-1
+          sudo apt-get install -y shellcheck
       - name: ShellCheck
         run: |
           if find . -type f -name "*.sh" -exec shellcheck \
