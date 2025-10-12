@@ -9,6 +9,16 @@ on:
         type: string
         required: false
         default: 'dev'
+      commitlint-config:
+        required: false
+        type: string
+        description: "The path to the commitlint configuration file (optional)"
+        default: '.github/commitlint.config.cjs'
+      yamllint-config:
+        required: false
+        type: string
+        description: "The path to the yamllint configuration file (optional)"
+        default: '.github/.yamllintrc.yml'
 
 permissions:
   contents: read
@@ -23,12 +33,19 @@ jobs:
       name: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
-      - name: Commmit lint
-        uses: wagoid/commitlint-github-action@b948419dd99f3fd78a6548d48f94e3df7f6bf3ed
         with:
-          configFile: config/commitlint.config.cjs
-          failOnErrors: true
-          failOnWarnings: false
+          fetch-depth: 0
+          persist-credentials: false
+      - name: commitlint
+        uses: >-
+          wagoid/commitlint-github-action@b948419dd99f3fd78a6548d48f94e3df7f6bf3ed
+        with:
+          configFile: >-
+            ${{
+              inputs.commitlint-config ||
+              '.github/commitlint.config.cjs'
+            }}
+
   validate-yaml:
     name: Validate YAML
     runs-on: ubuntu-24.04
@@ -36,22 +53,17 @@ jobs:
       name: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
-      - name: Install yamllint
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y yamllint
+        with:
+          fetch-depth: 0
+          persist-credentials: false
       - name: yamllint
         run: |
-          CONFIG="config/yamllint-config.yml"
-          # Check if config file exists
-          if [ -f "$CONFIG" ]; then
+          CONFIG="${{ inputs.yamllint-config }}"
+          # If config is provided and file exists, use it; otherwise, run with default config
+          if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
             echo "Using yamllint config file: $CONFIG"
-            if yamllint -c "$CONFIG" .; then
-              echo "Lint free! 🎉"
-            fi
+            docker run --rm -v "$(pwd)":/data cytopia/yamllint . -c "$CONFIG"
           else
-            echo "Config file '$CONFIG' not found, running yamllint with default configuration"
-            if yamllint .; then
-              echo "Lint free! 🎉"
-            fi
+            echo "No yamllint config provided or file not found, running with default configuration"
+            docker run --rm -v "$(pwd)":/data cytopia/yamllint .
           fi

@@ -23,6 +23,8 @@ jobs:
     uses: ./.github/workflows/source-protection.yml
     with:
       environment: ${{ inputs.environment }}
+      commitlint-config: '.github/commitlint.config.cjs'
+      yamllint-config: '.github/.yamllintrc.yml'
   shellcheck:
     name: ShellCheck
     uses: ./.github/workflows/shellcheck.yml
