@@ -4,6 +4,11 @@ name: ShellCheck
 on:
   workflow_call:
     inputs:
+      environment:
+        description: 'The environment to run ShellCheck against (e.g., dev, staging, prod)'
+        type: string
+        required: false
+        default: 'dev'
       severity:
         description: 'The severity level for ShellCheck (e.g., info, warning, error)'
         type: string
@@ -24,6 +29,8 @@ jobs:
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-24.04
+    environment:
+      name: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
       - name: Install ShellCheck

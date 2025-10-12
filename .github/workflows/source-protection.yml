@@ -3,6 +3,12 @@ name: Source protection
 
 on:
   workflow_call:
+    inputs:
+      environment:
+        description: 'The environment to run source protection against (e.g., dev, staging, prod)'
+        type: string
+        required: false
+        default: 'dev'
 
 permissions:
   contents: read
@@ -13,6 +19,8 @@ jobs:
   validate-commits:
     name: Validate Commits
     runs-on: ubuntu-24.04
+    environment:
+      name: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
       - name: Commmit lint
@@ -24,6 +32,8 @@ jobs:
   validate-yaml:
     name: Validate YAML
     runs-on: ubuntu-24.04
+    environment:
+      name: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
       - name: Install yamllint

@@ -5,14 +5,23 @@ run-name: '🧪 Running tests for ${{ github.ref }}'
 
 on:
   workflow_call:
+    inputs:
+      environment:
+        description: 'The environment to run tests against (e.g., dev, staging, prod)'
+        type: string
+        required: false
+        default: 'dev'
 
 jobs:
   source-protection:
     name: Source protection
     uses: ./.github/workflows/source-protection.yml
+    with:
+      environment: ${{ inputs.environment }}
   shellcheck:
     name: ShellCheck
     uses: ./.github/workflows/shellcheck.yml
     with:
       severity: 'error'
       shell-type: 'bash'
+      environment: ${{ inputs.environment }}
