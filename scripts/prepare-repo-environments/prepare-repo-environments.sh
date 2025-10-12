@@ -172,6 +172,9 @@ main() {
   while [[ $# -gt 0 ]]; do
     arg="$1"
     case "${arg}" in
+      -h|--help|help)
+        usage
+        ;;
       --list)
         list_mode=1
         shift
