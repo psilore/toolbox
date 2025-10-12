@@ -39,8 +39,6 @@ jobs:
       - name: Semanitic Release
         uses: cycjimmy/semantic-release-action@9cc899c47e6841430bbaedb43de1560a568dfd16
         id: semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GIT_USER_PAT }}
         with:
           semantic_version: v24.2.1
           extra_plugins: |
@@ -48,6 +46,13 @@ jobs:
             @semantic-release/changelog@6.0.3
             @semantic-release/exec@7.0.2
             conventional-changelog-conventionalcommits@8.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_USER_PAT }}
+          GIT_AUTHOR_NAME: ${{ secrets.GIT_USER_NAME }}
+          GIT_AUTHOR_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
+          GIT_COMMITTER_NAME: ${{ secrets.GIT_USER_NAME }}
+          GIT_COMMITTER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
+
       - name: Success summary
         if: ${{ steps.semantic-release.outputs.new_release_published == 'true' }}
         run: |
