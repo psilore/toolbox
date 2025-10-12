@@ -1,3 +1,10 @@
+## [1.1.0](https://github.com/psilore/toolbox/compare/v1.0.0...v1.1.0) (2025-10-12)
+
+### :sparkles: New Features
+
+* **ci:** sign bot commits ([3a43d54](https://github.com/psilore/toolbox/commit/3a43d54022f4b7c32c76559ecc7da86cb1846ecd))
+* **ci:** sign bot commits ([#9](https://github.com/psilore/toolbox/issues/9)) ([e80d79d](https://github.com/psilore/toolbox/commit/e80d79d015727249adab13361f9d41f6a2d5f00d))
+
 ## 1.0.0 (2025-10-12)
 
 ### :sparkles: New Features
