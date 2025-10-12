@@ -21,6 +21,10 @@ jobs:
   source-protection:
     name: Source protection
     uses: ./.github/workflows/source-protection.yml
+    with:
+      environment: 'prod'
+      commitlint-config: '.github/commitlint.config.cjs'
+      yamllint-config: '.github/.yamllintrc.yml'
   shellcheck:
     name: ShellCheck
     uses: ./.github/workflows/shellcheck.yml
@@ -37,6 +41,7 @@ jobs:
         uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Setup GitHub CLI
         run: gh auth setup-git
       - name: Configure git

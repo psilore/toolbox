@@ -63,7 +63,13 @@ jobs:
           if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
             echo "Using yamllint config file: $CONFIG"
             docker run --rm -v "$(pwd)":/data cytopia/yamllint . -c "$CONFIG"
+            if [ $? -eq 0 ]; then
+              echo "Lint free! 🎉"
+            fi
           else
             echo "No yamllint config provided or file not found, running with default configuration"
             docker run --rm -v "$(pwd)":/data cytopia/yamllint .
+            if [ $? -eq 0 ]; then
+              echo "Lint free! 🎉"
+            fi
           fi
