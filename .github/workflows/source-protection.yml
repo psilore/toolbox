@@ -39,7 +39,7 @@ jobs:
       - name: Install yamllint
         run: |
           sudo apt-get update
-          sudo apt-get install -y yamllint=1.37.1-1
+          sudo apt-get install -y yamllint==1.35.1-2
       - name: yamllint
         run: |
           CONFIG="config/yamllint-config.yml"
