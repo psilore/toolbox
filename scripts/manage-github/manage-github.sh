@@ -65,10 +65,18 @@ fetch_repo_names() {
     exit 1
   fi
 
-  if ! repo_names=$(echo "$active_repos" | jq -r '.[].name' 2>&1); then
-    format_error "Failed to parse JSON with jq:"
-    format_log "$repo_names"
-    exit 1
+  if [ "$SKIP_ARCHIVED" = true ]; then
+    if ! repo_names=$(echo "$active_repos" | jq -r '.[] | select(.archived == false) | .name' 2>&1); then
+      format_error "Failed to parse JSON with jq:"
+      format_log "$repo_names"
+      exit 1
+    fi
+  else
+    if ! repo_names=$(echo "$active_repos" | jq -r '.[].name' 2>&1); then
+      format_error "Failed to parse JSON with jq:"
+      format_log "$repo_names"
+      exit 1
+    fi
   fi
 
   echo "$repo_names"
@@ -99,23 +107,26 @@ print_version() {
 }
 
 usage() {
-  printf '%s\n' "${FMT_BOLD}Usage:${FMT_RESET} bash $(dirname "$0")/$(basename "$0") [OPTIONS]"
-  printf '%s\n' "  --version                 Show script version"
-  printf '\n'
-  printf '%s\n' "${FMT_BOLD}Options:${FMT_RESET}"
-  printf '\n'
-  printf '%s\n' "  -h, --help                                 Show this help message"
-  printf '%s\n' "  -m, --members OWNER [Required],TEAM_SLUG   Get members of the team for the owner or team (comma or space separated)"
-  printf '%s\n' "  -r, --repos OWNER [Required],TEAM_SLUG     Get repositories for the owner or team (comma or space separated)"
-  printf '\n'
-  printf '%s\n' "Examples:"
-  printf '%s\n' "  bash $(dirname "$0")/$(basename "$0") -r acme              List repos for user/organization acme"
-  printf '%s\n' "  bash $(dirname "$0")/$(basename "$0") -r acme,dreamteam    List repos in organization acme for team dreamteam"
-  printf '%s\n' "  bash $(dirname "$0")/$(basename "$0") -m acme              List members of organization acme"
-  printf '%s\n' "  bash $(dirname "$0")/$(basename "$0") -m acme,dreamteam    List members in organization acme for team dreamteam"
-  printf '\n'
-}
+  cat <<EOF
+${FMT_BOLD}Usage:${FMT_RESET} $(basename "$0") [OPTIONS]
 
+  --version                 Show script version
+  --skip-archived           Skip archived repositories when listing
+
+${FMT_BOLD}Options:${FMT_RESET}
+
+  -h, --help                                 Show this help message
+  -m, --members OWNER [Required],TEAM_SLUG   Get members of the team for the owner or team (comma or space separated)
+  -r, --repos OWNER [Required],TEAM_SLUG     Get repositories for the owner or team (comma or space separated)
+
+Examples:
+  $(basename "$0") -r acme              List repos for user/organization acme
+  $(basename "$0") -r acme,dreamteam    List repos in organization acme for team dreamteam
+  $(basename "$0") -m acme              List members of organization acme
+  $(basename "$0") -m acme,dreamteam    List members in organization acme for team dreamteam
+
+EOF
+}
 
 setup() {
   setup_colors
@@ -147,13 +158,22 @@ main() {
     print_version
     exit 0
   fi
+  SKIP_ARCHIVED=false
+  REPOS_FLAG=false
+  MEMBERS_FLAG=false
+  for arg in "$@"; do
+    if [[ "$arg" == "--skip-archived" ]]; then
+      SKIP_ARCHIVED=true
+      # Remove the flag from positional args
+      set -- "${@/--skip-archived/}"
+      break
+    fi
+  done
   if ! OPTIONS=$(getopt -o hr:m: --long help,repos:,members: -- "$@"); then
     usage
     exit 1
   fi
   eval set -- "$OPTIONS"
-  REPOS_FLAG=false
-  MEMBERS_FLAG=false
   while true; do
     case "$1" in
       -h|--help)
@@ -201,7 +221,6 @@ main() {
     esac
   done
 
-  # If no valid option was passed, print usage and exit 1
   if [ "$MEMBERS_FLAG" = false ] && [ "$REPOS_FLAG" = false ]; then
     usage
     exit 1
