@@ -33,6 +33,39 @@ setup_colors(){
   FMT_BOLD=$(printf '\033[1m')
 }
 
+print_version() {
+  local SCRIPT_DIR
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+  local VERSION_FILE="$SCRIPT_DIR/../../VERSION"
+  
+  if [[ -f "$VERSION_FILE" ]]; then
+    cat "$VERSION_FILE"
+  else
+    echo "unknown"
+  fi
+}
+
+usage() {
+  cat <<EOF
+${FMT_BOLD}Usage:${FMT_RESET} $(basename "$0") [OPTIONS]
+
+Checks the conclusion of a workflow run and reports the result.
+
+${FMT_BOLD}Options:${FMT_RESET}
+  -f, --file           Write summary to step_summary.md file (default)
+  -l, --log            Output summary to stdout instead of file
+  -h, --help           Show this help message
+  --version            Show script version
+
+${FMT_BOLD}Examples:${FMT_RESET}
+  $(basename "$0")                    # Write to file (default)
+  $(basename "$0") --file             # Write to file (explicit)
+  $(basename "$0") --stdout           # Output to stdout
+
+EOF
+  exit 0
+}
+
 check_step_summary() {
   local SUMMARY_FILE="step_summary.md"
   if [ ! -f "$SUMMARY_FILE" ]; then
@@ -57,14 +90,59 @@ check_step_summary() {
 
 setup() {
   setup_colors
-  touch step_summary.md
-  SUMMARY_FILE=step_summary.md
+  
+  if [[ "${OUTPUT_MODE}" == "file" ]]; then
+    touch step_summary.md
+    SUMMARY_FILE=step_summary.md
+    format_log "Created and using summary file: $SUMMARY_FILE"
+  else
+    format_log "Output mode: stdout"
+  fi
+}
 
-  format_log "Created and using summary file: $SUMMARY_FILE"
+write_summary() {
+  local content="$1"
+  
+  if [[ "${OUTPUT_MODE}" == "file" ]]; then
+    echo "$content" >> "$SUMMARY_FILE"
+  else
+    echo "$content"
+  fi
 }
 
 main() {
   setup
+  # Default output mode
+  OUTPUT_MODE="file"
+  
+  # Parse command line arguments
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -f|--file)
+        OUTPUT_MODE="file"
+        shift
+        ;;
+      -l|--log)
+        OUTPUT_MODE="stdout"
+        shift
+        ;;
+      -h|--help)
+        usage
+        ;;
+      --version)
+        print_version
+        exit 0
+        ;;
+      *)
+        setup_colors
+        format_error "Unknown option: $1"
+        usage
+        ;;
+    esac
+  done
+  
+  setup
+  
   local conclusion="${GITHUB_EVENT_WORKFLOW_RUN_CONCLUSION:-}"
   local repo_name="${GITHUB_EVENT_REPOSITORY_NAME:-}"
   local html_url="${GITHUB_EVENT_WORKFLOW_RUN_HTML_URL:-}"
@@ -76,8 +154,12 @@ main() {
     format_success "Workflow succeeded"
     exit 0
   else
-    check_step_summary
-    cat <<EOF >> "$SUMMARY_FILE"
+    if [[ "${OUTPUT_MODE}" == "file" ]]; then
+      check_step_summary
+    fi
+    
+    local summary_content
+    summary_content=$(cat <<EOF
 ### 🚫 Deployment Failed!
 
 **See job:**
@@ -85,6 +167,9 @@ main() {
 | --- | --- | --- | --- |
 | $repo_name | [$workflow_name]($html_url) | $run_number | $environment |
 EOF
+)
+    
+    write_summary "$summary_content"
     format_error "Workflow failed"
     exit 1
   fi
